@@ -9,8 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DAL\" />
-    <Folder Include="Services\" />
+    <Folder Include="DAL\interfaces\" />
+    <Folder Include="DAL\implementations\" />
+    <Folder Include="Services\interfaces\" />
+    <Folder Include="Services\implementations\" />
   </ItemGroup>
 
   <ItemGroup>
