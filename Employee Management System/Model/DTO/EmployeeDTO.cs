@@ -2,18 +2,15 @@
 
 namespace Employee_Management_System.Model
 {
-    public class Employee
+    public class EmployeeDTO
     {
         [Key]
         public string UserEmail { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "Department Name is required")]
         public string DepartmentName { get; set; }
+
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
-        public User User { get; set; }
-        public Department Department { get; set; }
-        public Salary Salary { get; set; }
-        public List<Leave> Leaves { get; set; }
-        public List<Attendance> Attendances { get; set; }
     }
 }

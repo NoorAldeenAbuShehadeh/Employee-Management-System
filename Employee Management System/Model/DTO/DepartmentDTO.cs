@@ -2,12 +2,11 @@
 
 namespace Employee_Management_System.Model
 {
-    public class Department
+    public class DepartmentDTO
     {
         [Key]
         public string Name { get; set; }
+
         public string ManagerEmail { get; set; }
-        public Employee Manager { get; set; }
-        public List<Employee> Employees { get; set; }
     }
 }
