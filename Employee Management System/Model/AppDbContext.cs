@@ -55,7 +55,8 @@ namespace Employee_Management_System.Model
             modelBuilder.Entity<Department>()
                 .HasOne(d => d.Manager)
                 .WithOne() // the manager can manage only one depertment
-                .HasForeignKey<Department>(d => d.ManagerEmail);
+                .HasForeignKey<Department>(d => d.ManagerEmail)
+                .IsRequired(false);//can be null
 
             // Department - Employees *** one - many relationship
             modelBuilder.Entity<Department>()
