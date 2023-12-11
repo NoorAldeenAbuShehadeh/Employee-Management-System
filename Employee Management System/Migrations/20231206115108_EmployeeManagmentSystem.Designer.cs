@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Employee_Management_System.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231204171330_EmployeeManagmentSystem")]
+    [Migration("20231206115108_EmployeeManagmentSystem")]
     partial class EmployeeManagmentSystem
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,8 +27,11 @@ namespace Employee_Management_System.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("CheckIn")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CheckOut")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("EmployeeEmail")
                         .IsRequired()

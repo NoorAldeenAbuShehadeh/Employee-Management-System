@@ -16,10 +16,7 @@ namespace Employee_Management_System.Model
     {
         Present,
         Absent,
-        OnLeave,
-        SickLeave,
         Vacation,
-        HalfDay,
         Remote
     }
 }

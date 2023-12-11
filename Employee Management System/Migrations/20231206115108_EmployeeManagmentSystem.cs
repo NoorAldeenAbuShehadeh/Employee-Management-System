@@ -36,7 +36,8 @@ namespace Employee_Management_System.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     EmployeeEmail = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    CheckIn = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CheckOut = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

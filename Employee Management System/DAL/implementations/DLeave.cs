@@ -91,6 +91,36 @@ namespace Employee_Management_System.DAL
                 return false;
             }
         }
+        public LeaveDTO? GetLeave(int id)
+        {
+            try
+            {
+                var leave = _context.Leaves.FirstOrDefault(l => l.Id == id);
+                if (leave == null)
+                {
+                    Console.WriteLine($"leave with id = {id} not found");
+                    _logger.LogInformation($"leave with id = {id} not found");
+                    return null;
+                }
+                var leaveDTO = new LeaveDTO 
+                {
+                    Id= leave.Id,
+                    Description= leave.Description,
+                    EmployeeEmail= leave.EmployeeEmail,
+                    StartDate= leave.StartDate,
+                    EndDate= leave.EndDate,
+                    Status = leave.Status
+                };
+                _logger.LogInformation($"Retrieved leave id = {id}");
+                return leaveDTO;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving leaves for employee: {ex.Message}");
+                _logger.LogError($"Error while retrieving leaves for employee: {ex.Message}");
+                return null;
+            }
+        }
         public List<LeaveDTO>? GetLeaves(string employeeEmail)
         {
             try

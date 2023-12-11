@@ -25,8 +25,11 @@ namespace Employee_Management_System.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("CheckIn")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("CheckOut")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("EmployeeEmail")
                         .IsRequired()
