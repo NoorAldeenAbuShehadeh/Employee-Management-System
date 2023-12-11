@@ -1,5 +1,6 @@
 ﻿using Employee_Management_System.Model;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
 
 namespace Employee_Management_System.DAL
 {
@@ -14,7 +15,7 @@ namespace Employee_Management_System.DAL
             _logger = logger;
         }
 
-        public void AddDepartment(DepartmentDTO departmentDTO)
+        public bool AddDepartment(DepartmentDTO departmentDTO)
         {
             try
             {
@@ -22,9 +23,11 @@ namespace Employee_Management_System.DAL
                 {
                     Console.WriteLine("Bad Request should has a department to add it");
                     _logger.LogError("Bad Request should has a department to add it");
+                    return false;
                 }
                 else
                 {
+                    ValidateDepartment(departmentDTO);
                     Department department = new Department()
                     {
                         Name = departmentDTO.Name,
@@ -34,15 +37,22 @@ namespace Employee_Management_System.DAL
                     _context.SaveChanges();
                     Console.WriteLine($"Department Added");
                     _logger.LogInformation($"Added new Department: {department.Name}");
+                    return true;
                 }
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine($"Validation Error: {ex.Message}");
+                _logger.LogError($"Validation Error while add new department: {ex.Message}");
+                return false;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while add new department: {ex.Message}");
                 _logger.LogError($"Error while add new department: {ex.Message}");
+                return false;
             }
         }
-
         public List<DepartmentDTO>? GetDepartments()
         {
             try 
@@ -64,8 +74,7 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
-
-        public void UpdateDepartment(DepartmentDTO departmentDTO)
+        public bool UpdateDepartment(DepartmentDTO departmentDTO)
         {
             try
             {
@@ -74,6 +83,7 @@ namespace Employee_Management_System.DAL
                 {
                     Console.WriteLine($"Department with Name {departmentDTO?.Name} not found.");
                     _logger.LogError($"Department with Name {departmentDTO?.Name} not found.");
+                    return false;
                 }
                 else
                 {
@@ -82,21 +92,41 @@ namespace Employee_Management_System.DAL
                     {
                         Console.WriteLine($"Employee with Name {departmentDTO?.ManagerEmail} not found or not Manager.");
                         _logger.LogError($"Employee with Name {departmentDTO?.ManagerEmail} not found or not Manager.");
+                        return false;
                     }
                     else
                     {
+                        ValidateDepartment(departmentDTO);
                         department.ManagerEmail = departmentDTO.ManagerEmail;
                         _context.SaveChanges();
                         _logger.LogInformation($"Department with Name {department?.Name} updated.");
+                        return true;
                     }
                 }
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine($"Validation Error: {ex.Message}");
+                _logger.LogError($"Validation Error while update department: {ex.Message}");
+                return false;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while update department: {ex.Message}");
                 _logger.LogError($"Error while update department: {ex.Message}");
+                return false;
             }
         }
+        private void ValidateDepartment(DepartmentDTO departmentDTO)
+        {
+            var validationContext = new ValidationContext(departmentDTO, serviceProvider: null, items: null);
+            var validationResults = new List<ValidationResult>();
 
+            if (!Validator.TryValidateObject(departmentDTO, validationContext, validationResults, validateAllProperties: true))
+            {
+                var errorMessages = validationResults.Select(result => result.ErrorMessage);
+                throw new ValidationException(string.Join(Environment.NewLine, errorMessages));
+            }
+        }
     }
 }

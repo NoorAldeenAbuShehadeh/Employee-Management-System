@@ -1,6 +1,7 @@
 ﻿using Employee_Management_System.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
 
 namespace Employee_Management_System.DAL
 {
@@ -13,7 +14,7 @@ namespace Employee_Management_System.DAL
             _context = context;
             _logger = logger;
         }
-        public void AddEmployee(EmployeeDTO employeeDTO)
+        public bool AddEmployee(EmployeeDTO employeeDTO)
         {
             try
             {
@@ -21,9 +22,11 @@ namespace Employee_Management_System.DAL
                 {
                     Console.WriteLine("Bad Request should has a employee to add it");
                     _logger.LogError("Bad Request should has a employee to add it");
+                    return false;
                 }
                 else
                 {
+                    ValidateEmployee(employeeDTO);
                     Employee employee = new Employee()
                     {
                         UserEmail = employeeDTO.UserEmail,
@@ -35,15 +38,23 @@ namespace Employee_Management_System.DAL
                     _context.SaveChanges();
                     Console.WriteLine($"Employee Added");
                     _logger.LogInformation($"Added new Employee: {employee.UserEmail}");
+                    return true;
                 }
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine($"Validation Error: {ex.Message}");
+                _logger.LogError($"Validation Error while add new employee: {ex.Message}");
+                return false;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while add new employee: {ex.Message}");
                 _logger.LogError($"Error while add new employee: {ex.Message}");
+                return false;
             }
         }
-        public void UpdateEmployee(EmployeeDTO employeeDTO)
+        public bool UpdateEmployee(EmployeeDTO employeeDTO)
         {
             try
             {
@@ -52,20 +63,30 @@ namespace Employee_Management_System.DAL
                 {
                     Console.WriteLine($"Employee with email {employeeDTO?.UserEmail} not found.");
                     _logger.LogError($"Employee with email {employeeDTO?.UserEmail} not found.");
+                    return false;
                 }
                 else
                 {
+                    ValidateEmployee(employeeDTO);
                     employee.PhoneNumber = employeeDTO.PhoneNumber;
                     employee.Address = employeeDTO.Address;
                     employee.DepartmentName = employeeDTO.DepartmentName;
                     _context.SaveChanges();
                     _logger.LogInformation($"Employee with email {employeeDTO.UserEmail} updated.");
+                    return true;
                 }
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine($"Validation Error: {ex.Message}");
+                _logger.LogError($"Validation Error while update employee: {ex.Message}");
+                return false;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while update employee: {ex.Message}");
                 _logger.LogError($"Error while update employee: {ex.Message}");
+                return false;
             }
         }
         public List<EmployeeDTO>? GetEmployees()
@@ -119,6 +140,16 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
+        private void ValidateEmployee(EmployeeDTO employeeDTO)
+        {
+            var validationContext = new ValidationContext(employeeDTO, serviceProvider: null, items: null);
+            var validationResults = new List<ValidationResult>();
 
+            if (!Validator.TryValidateObject(employeeDTO, validationContext, validationResults, validateAllProperties: true))
+            {
+                var errorMessages = validationResults.Select(result => result.ErrorMessage);
+                throw new ValidationException(string.Join(Environment.NewLine, errorMessages));
+            }
+        }
     }
 }

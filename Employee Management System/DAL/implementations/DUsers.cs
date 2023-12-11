@@ -1,8 +1,6 @@
 ﻿using Employee_Management_System.Model;
 using Microsoft.Extensions.Logging;
-using System.Collections;
-using System.Security.Cryptography;
-using System.Text;
+using System.ComponentModel.DataAnnotations;
 
 namespace Employee_Management_System.DAL
 {
@@ -15,7 +13,7 @@ namespace Employee_Management_System.DAL
             _context = context;
             _logger = logger;
         }
-        public void AddUser(UserDTO userDTO)
+        public bool AddUser(UserDTO userDTO)
         {
             try
             {
@@ -23,9 +21,11 @@ namespace Employee_Management_System.DAL
                 {
                     Console.WriteLine("Bad Request should has a user to add it");
                     _logger.LogError("Bad Request should has a user to add it");
+                    return false;
                 }
                 else
                 {
+                    ValidateUser(userDTO);
                     User user = new User()
                     {
                         Email = userDTO.Email,
@@ -38,12 +38,20 @@ namespace Employee_Management_System.DAL
                     _context.SaveChanges();
                     Console.WriteLine($"user Added");
                     _logger.LogInformation($"Added new user: {user.Email}");
+                    return true;
                 }
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine($"Validation Error: {ex.Message}");
+                _logger.LogError($"Validation Error while add new user: {ex.Message}");
+                return false;
             }
             catch (Exception ex) 
             { 
                 Console.WriteLine($"Error while add new user: {ex.Message}");
                 _logger.LogError($"Error while add new user: {ex.Message}");
+                return false;
             }
         }
         public List<UserDTO>? GetUsers()
@@ -95,27 +103,30 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
-        public void DeleteUser(UserDTO userDTO)
+        public bool DeleteUser(string email)
         {
             try
             {
-                User? user = _context.Users.FirstOrDefault(u => u.Email == userDTO.Email);
+                User? user = _context.Users.FirstOrDefault(u => u.Email == email);
                 if (user == null)
                 {
-                    Console.WriteLine($"User with email {userDTO?.Email} not found.");
-                    _logger.LogError($"User with email {userDTO?.Email} not found.");
+                    Console.WriteLine($"User with email {email} not found.");
+                    _logger.LogError($"User with email {email} not found.");
+                    return false;
                 }
                 else
                 {
                     user.Status = "inActive";
                     _context.SaveChanges();
-                    _logger.LogInformation($"User with email {userDTO.Email} deleted.");
+                    _logger.LogInformation($"User with email {email} deleted.");
+                    return true;
                 }
             }
             catch(Exception ex) 
             {
                 Console.WriteLine($"Error while delete user: {ex.Message}");
                 _logger.LogError($"Error while delete user: {ex.Message}");
+                return false;
             }
         }
         public UserDTO? LogIn(string email, string password)
@@ -160,7 +171,7 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
-        public void UpdateUser(UserDTO userDTO)
+        public bool UpdateUser(UserDTO userDTO)
         {
            try
             {
@@ -169,20 +180,41 @@ namespace Employee_Management_System.DAL
                 {
                     Console.WriteLine($"User with email {userDTO?.Email} not found.");
                     _logger.LogError($"User with email {userDTO?.Email} not found.");
+                    return false;
                 }
                 else
                 {
+                    ValidateUser(userDTO);
                     user.Password = userDTO.Password;
                     user.Name = userDTO.Name;
                     user.Role = userDTO.Role;
                     _context.SaveChanges();
                     _logger.LogInformation($"User with email {userDTO.Email} updated.");
+                    return true;
                 }
             }
-            catch(Exception ex)
+            catch (ValidationException ex)
+            {
+                Console.WriteLine($"Validation Error: {ex.Message}");
+                _logger.LogError($"Validation Error while update user: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error while update user: {ex.Message}");
                 _logger.LogError($"Error while update user: {ex.Message}");
+                return false;
+            }
+        }
+        private void ValidateUser(UserDTO userDTO)
+        {
+            var validationContext = new ValidationContext(userDTO, serviceProvider: null, items: null);
+            var validationResults = new List<ValidationResult>();
+
+            if (!Validator.TryValidateObject(userDTO, validationContext, validationResults, validateAllProperties: true))
+            {
+                var errorMessages = validationResults.Select(result => result.ErrorMessage);
+                throw new ValidationException(string.Join(Environment.NewLine, errorMessages));
             }
         }
     }
