@@ -1,4 +1,5 @@
 ﻿using Employee_Management_System.Model;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 
@@ -29,7 +30,7 @@ namespace Employee_Management_System.DAL
                     ValidateAttendance(attendanceDTO);
                     Attendance attendance = new Attendance()
                     {
-                        EmployeeEmail = attendanceDTO.EmployeeEmail,
+                        EmployeeEmail =attendanceDTO.EmployeeEmail,
                         CheckIn = attendanceDTO.CheckIn,
                         CheckOut = attendanceDTO.CheckOut,
                         Status = attendanceDTO.Status,
@@ -115,11 +116,12 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
-        public List<AttendanceDTO>? GetAttendances()
+        public List<AttendanceDTO>? GetAttendances(DateTime startDate)
         {
             try
             {
                 var attendanceDTOs = _context.Attendances
+                   .Where(a=>a.CheckIn >= startDate)
                    .Select(a => new AttendanceDTO
                    {
                        Id = a.Id,
@@ -128,6 +130,8 @@ namespace Employee_Management_System.DAL
                        CheckIn = a.CheckIn,
                        Status = a.Status,
                    })
+                   .OrderBy(a => a.EmployeeEmail)
+                   .ThenBy(a => a.CheckIn)
                    .ToList();
                 _logger.LogInformation("retrived all attendances");
                 return attendanceDTOs;
@@ -136,6 +140,54 @@ namespace Employee_Management_System.DAL
             {
                 Console.WriteLine($"Error while retrive all attendances: {ex.Message}");
                 _logger.LogError($"Error while retrive all attendances: {ex.Message}");
+                return null;
+            }
+        }
+        public List<AttendanceDTO>? GetAttendanceReport(string employeeEmail, DateTime startDate)
+        {
+            try
+            {
+                var attendanceDtos = _context.Attendances
+                .Where(a => a.EmployeeEmail == employeeEmail && a.CheckIn >= startDate)
+                .Select(a => new AttendanceDTO
+                {
+                    Id = a.Id,
+                    EmployeeEmail = a.EmployeeEmail,
+                    CheckOut = a.CheckOut,
+                    CheckIn = a.CheckIn,
+                    Status = a.Status,
+                })
+                .ToList();
+                return attendanceDtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get attendance report: {ex.Message}");
+                _logger.LogError($"Error while get attendance report: {ex.Message}");
+                return null;
+            }
+        }
+        public List<AttendanceDTO>? GetAttendanceReportForDepartment(string departmentName, DateTime startDate)
+        {
+            try
+            {
+                var attendanceDtos = (from emp in _context.Employees
+                                 join attendance in _context.Attendances on emp.DepartmentName equals departmentName
+                                 where (attendance.CheckIn >= startDate && attendance.EmployeeEmail==emp.UserEmail)
+                                 select new AttendanceDTO
+                                 {
+                                     Id = attendance.Id,
+                                     EmployeeEmail = attendance.EmployeeEmail,
+                                     CheckOut = attendance.CheckOut,
+                                     CheckIn = attendance.CheckIn,
+                                     Status = attendance.Status,
+                                 }).ToList();
+                return attendanceDtos;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get attendance report: {ex.Message}");
+                _logger.LogError($"Error while get attendance report: {ex.Message}");
                 return null;
             }
         }

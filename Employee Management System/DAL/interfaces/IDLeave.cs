@@ -8,6 +8,7 @@ namespace Employee_Management_System.DAL
         public LeaveDTO? GetLeave(int id);
         public List<LeaveDTO>? GetLeaves(string employeeEmail);
         public List<LeaveDTO>? GetLeaves();
-        public List<LeaveDTO>? GetPendingLeaves();
+        public List<LeaveDTO>? GetPendingLeaves(string departmentName);
+        public List<LeaveDTO> GetApprovedLeaves();
     }
 }

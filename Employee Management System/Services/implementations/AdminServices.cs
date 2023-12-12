@@ -50,14 +50,14 @@ namespace Employee_Management_System.Services
             try {
                 Console.Clear();
                 Console.Write("Enter employee email: ");
-                string email = Console.ReadLine();
+                string? email = Console.ReadLine();
                 Console.Write("Enter employee Name: ");
-                string name = Console.ReadLine();
+                string? name = Console.ReadLine();
                 Console.Write("Enter employee Role (manager, employee): ");
-                string role = Console.ReadLine();
+                string? role = Console.ReadLine();
                 Console.Write("Enter employee password: ");
-                string password = Console.ReadLine();
-                string encriptedPass = EncodePassword(password);
+                string? password = Console.ReadLine();
+                string? encriptedPass = _dUsers.EncodePassword(password);
                 UserDTO userDTO = new UserDTO()
                 {
                     Email = email,
@@ -70,11 +70,11 @@ namespace Employee_Management_System.Services
                 if (userAdded)
                 {
                     Console.Write("Enter employee department name: ");
-                    string departmentName = Console.ReadLine();
+                    string? departmentName = Console.ReadLine();
                     Console.Write("Enter employee phone number: ");
-                    string phoneNumber = Console.ReadLine();
+                    string? phoneNumber = Console.ReadLine();
                     Console.Write("Enter employee address: ");
-                    string address = Console.ReadLine();
+                    string? address = Console.ReadLine();
                     EmployeeDTO employeeDTO = new EmployeeDTO()
                     {
                         UserEmail = email,
@@ -83,10 +83,14 @@ namespace Employee_Management_System.Services
                         Address = address
                     };
                     bool employeeAdded = _dEmployees.AddEmployee(employeeDTO);
-                    if (employeeAdded && role == "manager")
+                    if (employeeAdded)
                     {
-                        DepartmentDTO departmentDTO = new DepartmentDTO() { Name = departmentName, ManagerEmail = email };
-                        _dDepartments.UpdateDepartment(departmentDTO);
+                        AddSalary(email);
+                        if(role == "manager")
+                        {
+                            DepartmentDTO departmentDTO = new DepartmentDTO() { Name = departmentName, ManagerEmail = email };
+                            _dDepartments.UpdateDepartment(departmentDTO);
+                        }
                     }
                 }
             }
@@ -96,13 +100,10 @@ namespace Employee_Management_System.Services
                 _logger.LogError($"Error while add new employee: {ex.Message}");
             }
         }
-        public void AddSalary()
+        private void AddSalary(string email)
         {
             try 
             {
-                Console.Clear();
-                Console.Write("Enter employee email: ");
-                string email = Console.ReadLine();
                 Console.Write("Enter salary amount: ");
                 decimal amount = decimal.Parse(Console.ReadLine());
                 Console.Write("Enter salary bonuses: ");
@@ -260,7 +261,7 @@ namespace Employee_Management_System.Services
                 List<SalaryDTO>? salaries = _dSalary.GetSalaries();
                 salaries?.ForEach(salary =>
                 {
-                    Console.Write($"{salary.EmployeeEmail} => {salary.Amount-salary.Deductions+salary.Bonuses}");
+                    Console.Write($"employee email: {salary.EmployeeEmail}, total salary: {salary.Amount-salary.Deductions+salary.Bonuses}");
                 });
             }
             catch (Exception ex)
@@ -293,18 +294,45 @@ namespace Employee_Management_System.Services
                 _logger.LogError($"Error while get salary of employee: {ex.Message}");
             }
         }
-        public string? EncodePassword(string password)
+        public void LeaveTrend()
         {
-            try 
-            { 
-                byte[] bytes = Encoding.Unicode.GetBytes(password);
-                byte[] inArray = HashAlgorithm.Create("SHA1").ComputeHash(bytes);
-                return Convert.ToBase64String(inArray);
-            }
-            catch(Exception ex)
+            try
             {
-                _logger.LogError($"Error while encoding password: {ex.Message}");
-                return null;
+                _dLeave.GetApprovedLeaves()?
+                    .GroupBy(l => l.EmployeeEmail)?
+                    .OrderByDescending(lg => lg.Count())
+                    .ToList()?
+                    .ForEach(lg =>
+                    {
+                        var employeeEmail = lg.Key;
+                        var totalLeaves = lg.Count();
+                        Console.WriteLine($"EmployeeEmail: {employeeEmail}, TotalLeaves: {totalLeaves}");
+                    });
+
+                _logger.LogError($"Get data for all employees");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get leave trend: {ex.Message}");
+                _logger.LogError($"Error while get leave trend: {ex.Message}");
+            }
+        }
+        public void GetAttendances()
+        {
+            try
+            {
+                Console.Clear();
+                Console.Write("Enter start date (yyyy-MM-dd): ");
+                DateTime startDate = DateTime.ParseExact(Console.ReadLine(), "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None);
+                _dAttendance.GetAttendances(startDate)?.ForEach(a =>
+                {
+                    Console.WriteLine($"employee email: {a.EmployeeEmail}, status: {a.Status}, check in: {a.CheckIn}, check out: {a.CheckOut}");
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving attendances: {ex.Message}");
+                _logger.LogError($"Error while retrieving attendances: {ex.Message}");
             }
         }
     }

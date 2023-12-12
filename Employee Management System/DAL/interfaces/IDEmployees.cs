@@ -8,5 +8,6 @@ namespace Employee_Management_System.DAL
         public bool UpdateEmployee(EmployeeDTO employeeDTO);
         public List<EmployeeDTO>? GetEmployees();
         public EmployeeDTO? GetEmployee(string email);
+        public List<EmployeeDTO>? GetEmployees(string departmentName);
     }
 }

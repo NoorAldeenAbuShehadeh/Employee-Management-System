@@ -4,7 +4,6 @@
     {
         public void AddDepartment();
         public void AddEmployee();
-        public void AddSalary();
         public void UpdateDepartment();
         public void UpdateEmployee();
         public void UpdateSalary();
@@ -12,6 +11,7 @@
         public void GetEmployees();
         public void GetEmployeeSalary();
         public void GetEmployeeSalaries();
-        public string? EncodePassword(string password);
+        public void LeaveTrend();
+        public void GetAttendances();
     }
 }

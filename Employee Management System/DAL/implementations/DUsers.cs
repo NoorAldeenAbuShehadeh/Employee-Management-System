@@ -1,6 +1,8 @@
 ﻿using Employee_Management_System.Model;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Employee_Management_System.DAL
 {
@@ -92,6 +94,7 @@ namespace Employee_Management_System.DAL
                     Email = user.Email,
                     Name = user.Name,
                     Role = user.Role,
+                    Password = user.Password
                 };
                 _logger.LogError($"Get data for user");
                 return userDTO;
@@ -145,7 +148,6 @@ namespace Employee_Management_System.DAL
                     string userPassword = user.Password;
                     if (userPassword == password) 
                     {
-                        _logger.LogInformation($"User with email {email} logged in.");
                         UserDTO userDTO = new UserDTO() 
                             {  
                                 Email = user.Email,
@@ -154,6 +156,7 @@ namespace Employee_Management_System.DAL
                                 Status=user.Status,
                                 Password=user.Password 
                             };
+                        _logger.LogInformation($"User with email {email} logged in.");
                         return userDTO;
                     }
                     else
@@ -215,6 +218,20 @@ namespace Employee_Management_System.DAL
             {
                 var errorMessages = validationResults.Select(result => result.ErrorMessage);
                 throw new ValidationException(string.Join(Environment.NewLine, errorMessages));
+            }
+        }
+        public string? EncodePassword(string password)
+        {
+            try
+            {
+                byte[] bytes = Encoding.Unicode.GetBytes(password);
+                byte[] inArray = HashAlgorithm.Create("SHA1").ComputeHash(bytes);
+                return Convert.ToBase64String(inArray);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while encoding password: {ex.Message}");
+                return null;
             }
         }
     }

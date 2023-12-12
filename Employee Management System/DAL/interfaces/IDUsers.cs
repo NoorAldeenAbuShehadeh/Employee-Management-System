@@ -10,5 +10,6 @@ namespace Employee_Management_System.DAL
         public UserDTO? GetUser(string email);
         public bool DeleteUser(string email);
         public UserDTO LogIn(string email, string password);
+        public string? EncodePassword(string password);   
     }
 }

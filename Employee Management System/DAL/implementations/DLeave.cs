@@ -174,22 +174,47 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
-        public List<LeaveDTO>? GetPendingLeaves()
+        public List<LeaveDTO> GetApprovedLeaves()
         {
             try
             {
-                var leaveDTOs = _context.Leaves
-                    .Where(l => l.Status == LeaveStatus.Pending)
-                    .Select(l => new LeaveDTO
-                    {
-                        Id = l.Id,
-                        EmployeeEmail = l.EmployeeEmail,
-                        Description = l.Description,
-                        StartDate = l.StartDate,
-                        EndDate = l.EndDate,
-                        Status = l.Status,
-                    })
-                    .ToList();
+                var leaveDTOs = _context.Leaves.
+                    Where(l => l.Status == LeaveStatus.Approved)
+                   .Select(l => new LeaveDTO
+                   {
+                       Id = l.Id,
+                       EmployeeEmail = l.EmployeeEmail,
+                       Description = l.Description,
+                       StartDate = l.StartDate,
+                       EndDate = l.EndDate,
+                   })
+                   .ToList();
+                _logger.LogInformation("retrived approved leaves");
+                return leaveDTOs;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrive approved leaves: {ex.Message}");
+                _logger.LogError($"Error while retrive approved leaves: {ex.Message}");
+                return null;
+            }
+        }
+        public List<LeaveDTO>? GetPendingLeaves(string departmentName)
+        {
+            try
+            {
+                var leaveDTOs = (from emp in _context.Employees
+                                 join leave in _context.Leaves on emp.UserEmail equals leave.EmployeeEmail
+                                 where leave.Status == LeaveStatus.Pending
+                                 select new LeaveDTO
+                                 {
+                                     Id = leave.Id,
+                                     EmployeeEmail = leave.EmployeeEmail,
+                                     Description = leave.Description,
+                                     StartDate = leave.StartDate,
+                                     EndDate = leave.EndDate,
+                                     Status = leave.Status,
+                                 }).ToList();
 
                 _logger.LogInformation($"Retrieved leaves that status pending");
                 return leaveDTOs;

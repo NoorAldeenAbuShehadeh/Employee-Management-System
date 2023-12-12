@@ -1,5 +1,4 @@
 ﻿using Employee_Management_System.Model;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 
@@ -99,7 +98,7 @@ namespace Employee_Management_System.DAL
                         UserEmail = e.UserEmail,
                         Address = e.Address,
                         DepartmentName = e.DepartmentName,
-                        PhoneNumber= e.PhoneNumber
+                        PhoneNumber = e.PhoneNumber
                     })
                     .ToList();
                 _logger.LogInformation("retrived all employees");
@@ -109,6 +108,30 @@ namespace Employee_Management_System.DAL
             {
                 Console.WriteLine($"Error while retrive all employees: {ex.Message}");
                 _logger.LogError($"Error while retrive all employees: {ex.Message}");
+                return null;
+            }
+        }
+        public List<EmployeeDTO>? GetEmployees(string departmentName)
+        {
+            try
+            {
+                var employeeDTOs = (from emp in _context.Employees
+                                    join user in _context.Users on emp.DepartmentName equals departmentName
+                                    where (emp.UserEmail == user.Email && user.Role=="employee")
+                                    select new EmployeeDTO
+                                    {
+                                        UserEmail = emp.UserEmail,
+                                        Address = emp.Address,
+                                        DepartmentName = emp.DepartmentName,
+                                        PhoneNumber = emp.PhoneNumber,
+                                    }).ToList();
+                _logger.LogInformation("retrived all employees");
+                return employeeDTOs;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrive employees in a department: {ex.Message}");
+                _logger.LogError($"Error while retrive employees in a department: {ex.Message}");
                 return null;
             }
         }
@@ -123,14 +146,14 @@ namespace Employee_Management_System.DAL
                     _logger.LogError($"Employee with email {email} not found.");
                     return null;
                 }
-                EmployeeDTO employeeDTO = new EmployeeDTO 
+                EmployeeDTO employeeDTO = new EmployeeDTO
                 {
-                    UserEmail= employee.UserEmail,
+                    UserEmail = employee.UserEmail,
                     Address = employee.Address,
                     DepartmentName = employee.DepartmentName,
-                    PhoneNumber= employee.PhoneNumber
+                    PhoneNumber = employee.PhoneNumber
                 };
-                _logger.LogError($"Get data for employee");
+                _logger.LogInformation($"Get data for employee");
                 return employeeDTO;
             }
             catch (Exception ex)
