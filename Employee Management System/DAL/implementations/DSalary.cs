@@ -36,7 +36,6 @@ namespace Employee_Management_System.DAL
                         Deductions = salaryDTO.Deductions,
                     };
                     _context.Salaries.Add(salary);
-                    _context.SaveChanges();
                     Console.WriteLine($"salary Added");
                     _logger.LogInformation($"Added salary for employee: {salary.EmployeeEmail}");
                     return true;

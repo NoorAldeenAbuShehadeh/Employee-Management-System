@@ -1,8 +1,6 @@
 ﻿using Employee_Management_System.DAL;
 using Employee_Management_System.Model;
 using Microsoft.Extensions.Logging;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Employee_Management_System.Services
 {
@@ -14,8 +12,9 @@ namespace Employee_Management_System.Services
         private IDSalary _dSalary;
         private IDLeave _dLeave;// implement leave report for admin
         private IDAttendance _dAttendance;// implement attendance report for admin
+        private IDCommitDBChanges _dCommitDBChanges;
         private readonly ILogger<AdminServices> _logger;
-        public AdminServices(IDDepartments dDepartments, IDEmployees dEmployees, IDUsers dUsers, IDSalary dSalary, IDLeave dLeave, IDAttendance dAttendance, ILogger<AdminServices> logger) 
+        public AdminServices(IDDepartments dDepartments, IDEmployees dEmployees, IDUsers dUsers, IDSalary dSalary, IDLeave dLeave, IDAttendance dAttendance, IDCommitDBChanges dCommitDBChanges, ILogger<AdminServices> logger)
         {
             _dDepartments = dDepartments;
             _dEmployees = dEmployees;
@@ -23,6 +22,7 @@ namespace Employee_Management_System.Services
             _dSalary = dSalary;
             _dLeave = dLeave;
             _dAttendance = dAttendance;
+            _dCommitDBChanges = dCommitDBChanges;
             _logger = logger;
         }
         public void AddDepartment()
@@ -47,7 +47,8 @@ namespace Employee_Management_System.Services
         }
         public void AddEmployee()
         {
-            try {
+            try
+            {
                 Console.Clear();
                 Console.Write("Enter employee email: ");
                 string? email = Console.ReadLine();
@@ -57,6 +58,19 @@ namespace Employee_Management_System.Services
                 string? role = Console.ReadLine();
                 Console.Write("Enter employee password: ");
                 string? password = Console.ReadLine();
+                Console.Write("Enter employee department name: ");
+                string? departmentName = Console.ReadLine();
+                Console.Write("Enter employee phone number: ");
+                string? phoneNumber = Console.ReadLine();
+                Console.Write("Enter employee address: ");
+                string? address = Console.ReadLine();
+                Console.Write("Enter salary amount: ");
+                decimal amount = decimal.Parse(Console.ReadLine());
+                Console.Write("Enter salary bonuses: ");
+                decimal bonuses = decimal.Parse(Console.ReadLine());
+                Console.Write("Enter salary deductions: ");
+                decimal deductions = decimal.Parse(Console.ReadLine());
+
                 string? encriptedPass = _dUsers.EncodePassword(password);
                 UserDTO userDTO = new UserDTO()
                 {
@@ -69,12 +83,6 @@ namespace Employee_Management_System.Services
                 bool userAdded = _dUsers.AddUser(userDTO);
                 if (userAdded)
                 {
-                    Console.Write("Enter employee department name: ");
-                    string? departmentName = Console.ReadLine();
-                    Console.Write("Enter employee phone number: ");
-                    string? phoneNumber = Console.ReadLine();
-                    Console.Write("Enter employee address: ");
-                    string? address = Console.ReadLine();
                     EmployeeDTO employeeDTO = new EmployeeDTO()
                     {
                         UserEmail = email,
@@ -85,11 +93,23 @@ namespace Employee_Management_System.Services
                     bool employeeAdded = _dEmployees.AddEmployee(employeeDTO);
                     if (employeeAdded)
                     {
-                        AddSalary(email);
-                        if(role == "manager")
+                        SalaryDTO salaryDTO = new SalaryDTO()
+                        {
+                            EmployeeEmail = email,
+                            Amount = amount,
+                            Bonuses = bonuses,
+                            Deductions = deductions
+                        };
+                        bool salaryAdded = _dSalary.AddSalary(salaryDTO);
+                        if (salaryAdded&&role == "manager")
                         {
                             DepartmentDTO departmentDTO = new DepartmentDTO() { Name = departmentName, ManagerEmail = email };
-                            _dDepartments.UpdateDepartment(departmentDTO);
+                            bool departmentUpdated = _dDepartments.UpdateDepartment(departmentDTO);
+                            if (departmentUpdated) _dCommitDBChanges.SaveChanges();
+                        }
+                        else if (salaryAdded)
+                        {
+                            _dCommitDBChanges.SaveChanges();
                         }
                     }
                 }
@@ -98,31 +118,6 @@ namespace Employee_Management_System.Services
             {
                 Console.WriteLine($"Error while add new employee: {ex.Message}");
                 _logger.LogError($"Error while add new employee: {ex.Message}");
-            }
-        }
-        private void AddSalary(string email)
-        {
-            try 
-            {
-                Console.Write("Enter salary amount: ");
-                decimal amount = decimal.Parse(Console.ReadLine());
-                Console.Write("Enter salary bonuses: ");
-                decimal bonuses = decimal.Parse(Console.ReadLine());
-                Console.Write("Enter salary deductions: ");
-                decimal deductions = decimal.Parse(Console.ReadLine());
-                SalaryDTO salaryDTO = new SalaryDTO()
-                {
-                    EmployeeEmail = email,
-                    Amount = amount,
-                    Bonuses = bonuses,
-                    Deductions = deductions
-                };
-                _dSalary.AddSalary(salaryDTO);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error while add salary to employee: {ex.Message}");
-                _logger.LogError($"Error while add salary to employee: {ex.Message}");
             }
         }
         public void UpdateDepartment()
@@ -157,7 +152,7 @@ namespace Employee_Management_System.Services
                 string email = Console.ReadLine();
                 EmployeeDTO? employeeDTO = _dEmployees.GetEmployee(email);
                 UserDTO? userDTO = _dUsers.GetUser(email);
-                if(userDTO != null && employeeDTO!= null) 
+                if (userDTO != null && employeeDTO != null)
                 {
                     Console.Write("Enter new Department name: ");
                     string deprtmentName = Console.ReadLine();
@@ -169,12 +164,12 @@ namespace Employee_Management_System.Services
                     if (employeeUpdated)
                     {
                         bool userUpdated = _dUsers.UpdateUser(userDTO);
-                        if(userUpdated && role == "manager")
+                        if (userUpdated && role == "manager")
                         {
                             _dDepartments.UpdateDepartment(new DepartmentDTO { ManagerEmail = email, Name = deprtmentName });
                         }
                     }
-                    
+
                 }
                 else
                 {
@@ -233,16 +228,17 @@ namespace Employee_Management_System.Services
                 _logger.LogError($"Error while get departments: {ex.Message}");
             }
         }
-        public void GetEmployees() 
+        public void GetEmployees()
         {
             try
             {
                 List<EmployeeDTO>? employees = _dEmployees.GetEmployees();
                 List<UserDTO>? users = _dUsers.GetUsers();
                 var employeesData = from emp in employees
-                             join user in users on emp.UserEmail equals user.Email
-                             where user.Status == "active" select new { emp, user };
-                foreach( var employeeData in employeesData)
+                                    join user in users on emp.UserEmail equals user.Email
+                                    where user.Status == "active"
+                                    select new { emp, user };
+                foreach (var employeeData in employeesData)
                 {
                     Console.Write($"name: {employeeData.user.Name}, email: {employeeData.user.Email}, role: {employeeData.user.Role}, Department: {employeeData.emp.DepartmentName}");
                 }
@@ -261,7 +257,7 @@ namespace Employee_Management_System.Services
                 List<SalaryDTO>? salaries = _dSalary.GetSalaries();
                 salaries?.ForEach(salary =>
                 {
-                    Console.Write($"employee email: {salary.EmployeeEmail}, total salary: {salary.Amount-salary.Deductions+salary.Bonuses}");
+                    Console.Write($"employee email: {salary.EmployeeEmail}, total salary: {salary.Amount - salary.Deductions + salary.Bonuses}");
                 });
             }
             catch (Exception ex)

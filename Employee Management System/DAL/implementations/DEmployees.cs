@@ -34,7 +34,6 @@ namespace Employee_Management_System.DAL
                         PhoneNumber = employeeDTO.PhoneNumber
                     };
                     _context.Employees.Add(employee);
-                    _context.SaveChanges();
                     Console.WriteLine($"Employee Added");
                     _logger.LogInformation($"Added new Employee: {employee.UserEmail}");
                     return true;

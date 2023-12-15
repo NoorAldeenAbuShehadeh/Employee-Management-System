@@ -1,5 +1,4 @@
 ﻿using Employee_Management_System.Model;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 
@@ -30,7 +29,7 @@ namespace Employee_Management_System.DAL
                     ValidateAttendance(attendanceDTO);
                     Attendance attendance = new Attendance()
                     {
-                        EmployeeEmail =attendanceDTO.EmployeeEmail,
+                        EmployeeEmail = attendanceDTO.EmployeeEmail,
                         CheckIn = attendanceDTO.CheckIn,
                         CheckOut = attendanceDTO.CheckOut,
                         Status = attendanceDTO.Status,
@@ -121,7 +120,7 @@ namespace Employee_Management_System.DAL
             try
             {
                 var attendanceDTOs = _context.Attendances
-                   .Where(a=>a.CheckIn >= startDate)
+                   .Where(a => a.CheckIn >= startDate)
                    .Select(a => new AttendanceDTO
                    {
                        Id = a.Id,
@@ -172,16 +171,16 @@ namespace Employee_Management_System.DAL
             try
             {
                 var attendanceDtos = (from emp in _context.Employees
-                                 join attendance in _context.Attendances on emp.DepartmentName equals departmentName
-                                 where (attendance.CheckIn >= startDate && attendance.EmployeeEmail==emp.UserEmail)
-                                 select new AttendanceDTO
-                                 {
-                                     Id = attendance.Id,
-                                     EmployeeEmail = attendance.EmployeeEmail,
-                                     CheckOut = attendance.CheckOut,
-                                     CheckIn = attendance.CheckIn,
-                                     Status = attendance.Status,
-                                 }).ToList();
+                                      join attendance in _context.Attendances on emp.DepartmentName equals departmentName
+                                      where (attendance.CheckIn >= startDate && attendance.EmployeeEmail == emp.UserEmail)
+                                      select new AttendanceDTO
+                                      {
+                                          Id = attendance.Id,
+                                          EmployeeEmail = attendance.EmployeeEmail,
+                                          CheckOut = attendance.CheckOut,
+                                          CheckIn = attendance.CheckIn,
+                                          Status = attendance.Status,
+                                      }).ToList();
                 return attendanceDtos;
             }
             catch (Exception ex)

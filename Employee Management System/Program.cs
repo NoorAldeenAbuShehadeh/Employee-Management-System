@@ -6,11 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-IConfigurationRoot configuration = new ConfigurationBuilder()
-            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-            .AddJsonFile("appsettings.json")
-            .Build();// need to add appsettings.development.json
-string connectionSting = configuration.GetConnectionString("DefaultConnection");
+var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+var config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile(enviroment == "Development" ? $"appSettings.Development.json" : $"appSettings.json").Build();
+string connectionSting = config.GetConnectionString("DefaultConnection");
 var host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
@@ -22,6 +20,7 @@ var host = Host.CreateDefaultBuilder()
                 .AddSingleton<IDSalary, DSalary>()
                 .AddSingleton<IDAttendance, DAttendance>()
                 .AddSingleton<IDLeave, DLeave>()
+                .AddSingleton<IDCommitDBChanges, DCommitDBChanges>()
                 .AddSingleton<IAdminServices, AdminServices>()
                 .AddSingleton<IManagerServices, ManagerServices>()
                 .AddSingleton<IEmployeeServices, EmployeeServices>()

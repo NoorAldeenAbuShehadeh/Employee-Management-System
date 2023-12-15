@@ -37,7 +37,6 @@ namespace Employee_Management_System.DAL
                         Status = userDTO.Status
                     };
                     _context.Users.Add(user);
-                    _context.SaveChanges();
                     Console.WriteLine($"user Added");
                     _logger.LogInformation($"Added new user: {user.Email}");
                     return true;
