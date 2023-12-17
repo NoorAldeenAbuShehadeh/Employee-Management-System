@@ -205,7 +205,7 @@ namespace Employee_Management_System.DAL
             {
                 var leaveDTOs = (from emp in _context.Employees
                                  join leave in _context.Leaves on emp.UserEmail equals leave.EmployeeEmail
-                                 where leave.Status == LeaveStatus.Pending
+                                 where (leave.Status == LeaveStatus.Pending && emp.DepartmentName == departmentName)
                                  select new LeaveDTO
                                  {
                                      Id = leave.Id,
@@ -216,13 +216,40 @@ namespace Employee_Management_System.DAL
                                      Status = leave.Status,
                                  }).ToList();
 
-                _logger.LogInformation($"Retrieved leaves that status pending");
+                _logger.LogInformation($"Retrieved leaves that status pending for department {departmentName}");
                 return leaveDTOs;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error while retrieving pending leaves: {ex.Message}");
-                _logger.LogError($"Error while retrieving pending leaves: {ex.Message}");
+                Console.WriteLine($"Error while retrieving pending leaves for department: {ex.Message}");
+                _logger.LogError($"Error while retrieving pending leaves for department: {ex.Message}");
+                return null;
+            }
+        }
+        public List<LeaveDTO>? GetLeavesForDepartment(string departmentName)
+        {
+            try
+            {
+                var leaveDTOs = (from emp in _context.Employees
+                                 join leave in _context.Leaves on emp.UserEmail equals leave.EmployeeEmail
+                                 where (emp.DepartmentName == departmentName)
+                                 select new LeaveDTO
+                                 {
+                                     Id = leave.Id,
+                                     EmployeeEmail = leave.EmployeeEmail,
+                                     Description = leave.Description,
+                                     StartDate = leave.StartDate,
+                                     EndDate = leave.EndDate,
+                                     Status = leave.Status,
+                                 }).ToList();
+
+                _logger.LogInformation($"Retrieved leaves for department {departmentName}");
+                return leaveDTOs;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrieving leaves for department: {ex.Message}");
+                _logger.LogError($"Error while retrieving leaves for department: {ex.Message}");
                 return null;
             }
         }

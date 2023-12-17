@@ -157,6 +157,7 @@ namespace Employee_Management_System.DAL
                     Status = a.Status,
                 })
                 .ToList();
+                _logger.LogInformation($"Get Attendance Report");
                 return attendanceDtos;
             }
             catch (Exception ex)

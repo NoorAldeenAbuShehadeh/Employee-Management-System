@@ -69,7 +69,6 @@ namespace Employee_Management_System.DAL
                     employee.PhoneNumber = employeeDTO.PhoneNumber;
                     employee.Address = employeeDTO.Address;
                     employee.DepartmentName = employeeDTO.DepartmentName;
-                    _context.SaveChanges();
                     _logger.LogInformation($"Employee with email {employeeDTO.UserEmail} updated.");
                     return true;
                 }
@@ -159,6 +158,31 @@ namespace Employee_Management_System.DAL
             {
                 Console.WriteLine($"Error while get employee: {ex.Message}");
                 _logger.LogError($"Error while get employee: {ex.Message}");
+                return null;
+            }
+        }
+        public List<EmployeeDTO>? GetEmployees(decimal minSalary)
+        {
+            try
+            {
+                var employeeDTOs = (from emp in _context.Employees
+                                    join user in _context.Users on emp.UserEmail equals user.Email
+                                    join salary in _context.Salaries on emp.UserEmail equals salary.EmployeeEmail
+                                    where (salary.Amount >= minSalary)
+                                    select new EmployeeDTO
+                                    {
+                                        UserEmail = emp.UserEmail,
+                                        Address = emp.Address,
+                                        DepartmentName = emp.DepartmentName,
+                                        PhoneNumber = emp.PhoneNumber,
+                                    }).ToList();
+                _logger.LogInformation($"retrived all employees have min salary = {minSalary}");
+                return employeeDTOs;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrive all employees have min salary = {minSalary}: {ex.Message}");
+                _logger.LogError($"Error while retrive all employees have min salary = {minSalary}: {ex.Message}");
                 return null;
             }
         }

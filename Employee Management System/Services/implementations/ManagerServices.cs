@@ -35,16 +35,31 @@ namespace Employee_Management_System.Services
                 _logger.LogError($"Error while get pending leaves: {ex.Message}");
             }
         }
+        public void GetLeavesForDepartment(string departmentName)
+        {
+            try
+            {
+                _dLeave.GetLeavesForDepartment(departmentName)?.ForEach(l =>
+                {
+                    Console.WriteLine($"Id: {l.Id}, employee email: {l.EmployeeEmail}, description: {l.Description}, start date: {l.StartDate}, end date: {l.EndDate}, status: {l.Status.ToString()}");
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get pending leaves: {ex.Message}");
+                _logger.LogError($"Error while get pending leaves: {ex.Message}");
+            }
+        }
         public void UpdateLeave()
         {
             try
             {
-                Console.WriteLine("Enter leave id: ");
+                Console.Write("Enter leave id: ");
                 int id = int.Parse(Console.ReadLine());
                 LeaveDTO? leaveDTO = _dLeave.GetLeave(id);
                 if ( leaveDTO != null )
                 {
-                    Console.WriteLine("Enter leave status enter 0 if Pending, 1 if Approved, 2 if Denied): ");
+                    Console.Write("Enter leave status enter 0 if Pending, 1 if Approved, 2 if Denied: ");
                     LeaveStatus status = Enum.Parse<LeaveStatus>(Console.ReadLine());
                     leaveDTO.Status = status;
                     _dLeave.UpdateLeave(leaveDTO);

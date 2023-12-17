@@ -54,7 +54,6 @@ namespace Employee_Management_System.DAL
                 return false;
             }
         }
-
         public bool UpdateSalary(SalaryDTO salaryDTO)
         {
             try
@@ -90,7 +89,6 @@ namespace Employee_Management_System.DAL
                 return false;
             }
         }
-
         public SalaryDTO? GetSalary(string employeeEmail)
         {
             try
@@ -122,7 +120,6 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
-
         public List<SalaryDTO>? GetSalaries()
         {
             try
@@ -146,7 +143,6 @@ namespace Employee_Management_System.DAL
                 return null;
             }
         }
-
         private void ValidateSalary(SalaryDTO salaryDTO)
         {
             var validationContext = new ValidationContext(salaryDTO, serviceProvider: null, items: null);

@@ -13,5 +13,7 @@
         public void GetEmployeeSalaries();
         public void LeaveTrend();
         public void GetAttendances();
+        public void GetLeaves();
+        public void FilterEmployeesBySalary();
     }
 }

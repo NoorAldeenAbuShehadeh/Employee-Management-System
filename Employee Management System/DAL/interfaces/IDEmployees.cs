@@ -9,5 +9,6 @@ namespace Employee_Management_System.DAL
         public List<EmployeeDTO>? GetEmployees();
         public EmployeeDTO? GetEmployee(string email);
         public List<EmployeeDTO>? GetEmployees(string departmentName);
+        public List<EmployeeDTO>? GetEmployees(decimal minSalary);
     }
 }

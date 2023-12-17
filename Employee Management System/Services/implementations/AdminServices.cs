@@ -10,8 +10,8 @@ namespace Employee_Management_System.Services
         private IDEmployees _dEmployees;
         private IDUsers _dUsers;
         private IDSalary _dSalary;
-        private IDLeave _dLeave;// implement leave report for admin
-        private IDAttendance _dAttendance;// implement attendance report for admin
+        private IDLeave _dLeave;
+        private IDAttendance _dAttendance;
         private IDCommitDBChanges _dCommitDBChanges;
         private readonly ILogger<AdminServices> _logger;
         public AdminServices(IDDepartments dDepartments, IDEmployees dEmployees, IDUsers dUsers, IDSalary dSalary, IDLeave dLeave, IDAttendance dAttendance, IDCommitDBChanges dCommitDBChanges, ILogger<AdminServices> logger)
@@ -101,15 +101,14 @@ namespace Employee_Management_System.Services
                             Deductions = deductions
                         };
                         bool salaryAdded = _dSalary.AddSalary(salaryDTO);
+                        if (salaryAdded)
+                        {
+                            _dCommitDBChanges.SaveChanges();
+                        }
                         if (salaryAdded&&role == "manager")
                         {
                             DepartmentDTO departmentDTO = new DepartmentDTO() { Name = departmentName, ManagerEmail = email };
                             bool departmentUpdated = _dDepartments.UpdateDepartment(departmentDTO);
-                            if (departmentUpdated) _dCommitDBChanges.SaveChanges();
-                        }
-                        else if (salaryAdded)
-                        {
-                            _dCommitDBChanges.SaveChanges();
                         }
                     }
                 }
@@ -127,9 +126,8 @@ namespace Employee_Management_System.Services
                 Console.Clear();
                 Console.Write("Enter department name: ");
                 string departmentName = Console.ReadLine();
-                Console.Write("Enter employee email: ");
+                Console.Write("Enter new manager email: ");
                 string email = Console.ReadLine();
-                Console.Write("Enter employee phone number: ");
                 DepartmentDTO departmentDTO = new DepartmentDTO()
                 {
                     Name = departmentName,
@@ -164,9 +162,17 @@ namespace Employee_Management_System.Services
                     if (employeeUpdated)
                     {
                         bool userUpdated = _dUsers.UpdateUser(userDTO);
-                        if (userUpdated && role == "manager")
+                        if (userUpdated)
                         {
-                            _dDepartments.UpdateDepartment(new DepartmentDTO { ManagerEmail = email, Name = deprtmentName });
+                            if(role == "manager")
+                            {
+                                bool departmentUpdated = _dDepartments.UpdateDepartment(new DepartmentDTO { ManagerEmail = email, Name = deprtmentName });
+                                if (departmentUpdated) _dCommitDBChanges.SaveChanges();
+                            }
+                            else 
+                            {
+                                _dCommitDBChanges.SaveChanges();
+                            }
                         }
                     }
 
@@ -218,9 +224,9 @@ namespace Employee_Management_System.Services
                 List<DepartmentDTO>? departments = _dDepartments.GetDepartments();
                 departments?.ForEach(department =>
                 {
-                    Console.Write($"department name: {department.Name}, manager email: {department.ManagerEmail}");
+                    Console.WriteLine($"department name: {department.Name}, manager email: {department.ManagerEmail}");
                 });
-                _logger.LogError($"Get data for all departments");
+                _logger.LogInformation($"Get data for all departments");
             }
             catch (Exception ex)
             {
@@ -233,16 +239,16 @@ namespace Employee_Management_System.Services
             try
             {
                 List<EmployeeDTO>? employees = _dEmployees.GetEmployees();
-                List<UserDTO>? users = _dUsers.GetUsers();
-                var employeesData = from emp in employees
-                                    join user in users on emp.UserEmail equals user.Email
-                                    where user.Status == "active"
-                                    select new { emp, user };
-                foreach (var employeeData in employeesData)
+                List<UserDTO>? users = new List<UserDTO>();
+                employees?.ForEach(employee =>
                 {
-                    Console.Write($"name: {employeeData.user.Name}, email: {employeeData.user.Email}, role: {employeeData.user.Role}, Department: {employeeData.emp.DepartmentName}");
+                    users.Add(_dUsers.GetUser(employee.UserEmail));
+                });
+                for(int i = 0; i < users.Count; i++)
+                {
+                    Console.WriteLine($"name: {users[i]?.Name}, email: {users[i]?.Email}, Department: {employees[i].DepartmentName}, role: {users[i]?.Role}");
                 }
-                _logger.LogError($"Get data for all employees");
+                _logger.LogInformation($"Get data for all employees");
             }
             catch (Exception ex)
             {
@@ -257,7 +263,7 @@ namespace Employee_Management_System.Services
                 List<SalaryDTO>? salaries = _dSalary.GetSalaries();
                 salaries?.ForEach(salary =>
                 {
-                    Console.Write($"employee email: {salary.EmployeeEmail}, total salary: {salary.Amount - salary.Deductions + salary.Bonuses}");
+                    Console.WriteLine($"employee email: {salary.EmployeeEmail}, total salary: {salary.Amount - salary.Deductions + salary.Bonuses}");
                 });
             }
             catch (Exception ex)
@@ -305,7 +311,7 @@ namespace Employee_Management_System.Services
                         Console.WriteLine($"EmployeeEmail: {employeeEmail}, TotalLeaves: {totalLeaves}");
                     });
 
-                _logger.LogError($"Get data for all employees");
+                _logger.LogInformation($"Get leave trend");
             }
             catch (Exception ex)
             {
@@ -329,6 +335,39 @@ namespace Employee_Management_System.Services
             {
                 Console.WriteLine($"Error while retrieving attendances: {ex.Message}");
                 _logger.LogError($"Error while retrieving attendances: {ex.Message}");
+            }
+        }
+        public void GetLeaves()
+        {
+            try
+            {
+                _dLeave.GetLeaves()?.OrderBy(l=>l.EmployeeEmail).ToList().ForEach(l =>
+                {
+                    Console.WriteLine($"Leave Id: {l.Id}, Employee Email: {l.EmployeeEmail}, Description: {l.Description}, StartDate: {l.StartDate}, EndDate: {l.EndDate}, Status: {l.Status.ToString()}");
+                });
+
+                _logger.LogInformation($"Get data for all leaves");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get all leaves: {ex.Message}");
+                _logger.LogError($"Error while get all leaves: {ex.Message}");
+            }
+        }
+        public void FilterEmployeesBySalary()
+        {
+            try
+            {
+                _dEmployees.GetEmployees(1000)?.ForEach(e =>
+                {
+                    Console.WriteLine($"email: {e.UserEmail}, Department: {e.DepartmentName}");
+                });
+                _logger.LogInformation($"Get data for all employees");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get departments: {ex.Message}");
+                _logger.LogError($"Error while get departments: {ex.Message}");
             }
         }
     }

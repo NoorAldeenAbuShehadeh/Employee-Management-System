@@ -10,13 +10,17 @@ namespace Employee_Management_System.Services
         private IDAttendance _dAttendance;
         private IDEmployees _dEmployee;
         private IDUsers _dUsers;
+        private IDSalary _dSalary;
+        private IDCommitDBChanges _dCommitDBChanges;
         private ILogger<EmployeeServices> _logger;
-        public EmployeeServices(IDLeave dLeave, IDAttendance dAttendance, IDEmployees dEmployees, IDUsers dUsers, ILogger<EmployeeServices> logger) 
+        public EmployeeServices(IDLeave dLeave, IDAttendance dAttendance, IDEmployees dEmployees, IDUsers dUsers, IDSalary dSalary, IDCommitDBChanges dCommitDBChanges, ILogger<EmployeeServices> logger) 
         {
             _dLeave = dLeave;
             _dAttendance = dAttendance;
             _dEmployee = dEmployees;
             _dUsers = dUsers;
+            _dSalary = dSalary;
+            _dCommitDBChanges = dCommitDBChanges;
             _logger = logger;
         }
 
@@ -97,7 +101,8 @@ namespace Employee_Management_System.Services
                             {
                                 Console.Write("Enter new password: ");
                                 userDTO.Password = _dUsers.EncodePassword(Console.ReadLine());
-                                _dUsers.UpdateUser(userDTO);
+                                bool userUpdated = _dUsers.UpdateUser(userDTO);
+                                if(userUpdated) _dCommitDBChanges.SaveChanges();
                             }
                             else
                             {
@@ -107,12 +112,12 @@ namespace Employee_Management_System.Services
                         case 2:
                             Console.Write("Enter new address: ");
                             emp.Address = Console.ReadLine();
-                            _dEmployee.UpdateEmployee(emp);
+                            if (_dEmployee.UpdateEmployee(emp)) _dCommitDBChanges.SaveChanges();
                             break;
                         case 3:
                             Console.Write("Enter new phone number: ");
                             emp.PhoneNumber = Console.ReadLine();
-                            _dEmployee.UpdateEmployee(emp);
+                            if (_dEmployee.UpdateEmployee(emp)) _dCommitDBChanges.SaveChanges();
                             break;
                         default:
                             Console.WriteLine("Wrong choice");
@@ -143,6 +148,58 @@ namespace Employee_Management_System.Services
                 _logger.LogError($"Error while get attendance report: {ex.Message}");
             }
         }
-
+        public void GetLeaves(UserDTO userDTO)
+        {
+            try
+            {
+                _dLeave.GetLeaves(userDTO.Email)?.ForEach(l =>
+                {
+                    Console.WriteLine($"Id: {l.Id}, description: {l.Description}, start date: {l.StartDate}, end date: {l.EndDate}, status: {l.Status.ToString()}");
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get employee leaves: {ex.Message}");
+                _logger.LogError($"Error while get employee leaves: {ex.Message}");
+            }
+        }
+        public void GetSalary(UserDTO userDTO)
+        {
+            try
+            {
+                SalaryDTO? salaryDTO = _dSalary.GetSalary(userDTO.Email);
+                if (salaryDTO != null)
+                {
+                    Console.WriteLine($"Salary amount: {salaryDTO.Amount}, bonuses: {salaryDTO.Bonuses}, deductions: {salaryDTO.Deductions}");
+                }
+                else
+                {
+                    Console.WriteLine($"No salary information");
+                    _logger.LogInformation($"No salary information");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get employee salary: {ex.Message}");
+                _logger.LogError($"Error while get employee salary: {ex.Message}");
+            }
+        }
+        public void GetInformation(UserDTO userDTO)
+        {
+            try
+            {
+                EmployeeDTO? emp = _dEmployee.GetEmployee(userDTO.Email);
+                SalaryDTO? salary = _dSalary.GetSalary(userDTO.Email);
+                if (emp != null)
+                {
+                    Console.WriteLine($"Email: {emp.UserEmail}, Address: {emp.Address}, Phone number: {emp.PhoneNumber}, Department name: {emp.DepartmentName}, Role: {userDTO.Role}, Salary: {salary?.Amount+salary?.Bonuses-salary?.Deductions}");
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error while get employee information: {ex.Message}");
+                _logger.LogError($"Error while get employee information: {ex.Message}");
+            }
+        }
     }
 }

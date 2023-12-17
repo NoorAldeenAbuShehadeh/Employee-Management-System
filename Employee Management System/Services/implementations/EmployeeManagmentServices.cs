@@ -70,20 +70,23 @@ namespace Employee_Management_System.Services
                 string? password = Console.ReadLine();
                 string? encriptPassword = _dUsers.EncodePassword(password);
                 UserDTO user = _dUsers.LogIn(email, encriptPassword);
-                switch (user?.Role)
+                if (user != null)
                 {
-                    case "admin":
-                        AdminFunctionalities(user);
-                        break;
-                    case "manager":
-                        ManagerFunctionalities(user);
-                        break;
-                    case "employee":
-                        EmployeeFunctionalities(user);
-                        break;
-                    default:
-                        Console.WriteLine("Invalid choice. Please try again.");
-                        break;
+                    switch (user?.Role)
+                    {
+                        case "admin":
+                            AdminFunctionalities(user);
+                            break;
+                        case "manager":
+                            ManagerFunctionalities(user);
+                            break;
+                        case "employee":
+                            EmployeeFunctionalities(user);
+                            break;
+                        default:
+                            Console.WriteLine("Invalid choice. Please try again.");
+                            break;
+                    }
                 }
             }
             catch (Exception ex)
@@ -137,6 +140,12 @@ namespace Employee_Management_System.Services
                         case 11:
                             _adminServices.GetAttendances();
                             break;
+                        case 12:
+                            _adminServices.GetLeaves();
+                            break;
+                        case 13:
+                            _adminServices.FilterEmployeesBySalary();
+                            break;
                         case 20:
                             logOut = true;
                             break;
@@ -156,18 +165,20 @@ namespace Employee_Management_System.Services
         }
         private void DisplayAdminMenu()
         {
-            Console.WriteLine("1. Add Department");
-            Console.WriteLine("2. Add Employee");
-            Console.WriteLine("3. Get Departments");
-            Console.WriteLine("4. Get Employees");
-            Console.WriteLine("5. Get Salaries");
-            Console.WriteLine("6. Get Salary info for employee");
-            Console.WriteLine("7. Update Deparment");
-            Console.WriteLine("8. Update Employee");
-            Console.WriteLine("9. Update Salary");
-            Console.WriteLine("10. Leave Trend");
-            Console.WriteLine("11. Attendance Report");
-            Console.WriteLine("20. Log Out");
+            Console.WriteLine("1. Add department");
+            Console.WriteLine("2. Add employee");
+            Console.WriteLine("3. Get departments");
+            Console.WriteLine("4. Get employees");
+            Console.WriteLine("5. Get salaries");
+            Console.WriteLine("6. Get salary info for employee");
+            Console.WriteLine("7. Update deparment");
+            Console.WriteLine("8. Update employee");
+            Console.WriteLine("9. Update salary");
+            Console.WriteLine("10. Leave trend");
+            Console.WriteLine("11. Attendance report");
+            Console.WriteLine("12. Get all leaves");
+            Console.WriteLine("13. Get employees have salary >= 1000");
+            Console.WriteLine("20. Log out");
             Console.Write("Enter your choice: ");
         }
         private void ManagerFunctionalities(UserDTO user)
@@ -199,6 +210,12 @@ namespace Employee_Management_System.Services
                             _employeeServices.UpdateInformations(user);
                             break;
                         case 6:
+                            _employeeServices.GetInformation(user);
+                            break;
+                        case 7:
+                            _managerServices.GetLeavesForDepartment(manager.DepartmentName);
+                            break;
+                        case 8:
                             logOut = true;
                             break;
                         default:
@@ -221,8 +238,10 @@ namespace Employee_Management_System.Services
             Console.WriteLine("2. Get Pending Leaves");
             Console.WriteLine("3. Update Leave For Employee");
             Console.WriteLine("4. Get Attendance For Department");
-            Console.WriteLine("5. Update informations");
-            Console.WriteLine("6. Log Out");
+            Console.WriteLine("5. Update my informations");
+            Console.WriteLine("6. See my informations");
+            Console.WriteLine("7. Get all leaves");
+            Console.WriteLine("8. Log Out");
             Console.Write("Enter your choice: ");
         }
         private void EmployeeFunctionalities(UserDTO user)
@@ -250,8 +269,15 @@ namespace Employee_Management_System.Services
                             _employeeServices.GetAttendanceReport(user);
                             break;
                         case 5:
+                            _employeeServices.GetLeaves(user);
                             break;
                         case 6:
+                            _employeeServices.GetSalary(user);
+                            break;
+                        case 7:
+                            _employeeServices.GetInformation(user);
+                            break;
+                        case 8:
                             logOut = true;
                             break;
                         default:
@@ -270,12 +296,14 @@ namespace Employee_Management_System.Services
         }
         private void DisplayEmployeeMenu()
         {
-            Console.WriteLine("1. Add Attendance");
-            Console.WriteLine("2. Add Leave");
+            Console.WriteLine("1. Add attendance");
+            Console.WriteLine("2. Add leave");
             Console.WriteLine("3. Update informations");
             Console.WriteLine("4. get attendance report");
-            Console.WriteLine("5. ");
-            Console.WriteLine("6. Log Out");
+            Console.WriteLine("5. Get leaves");
+            Console.WriteLine("6. Get salary");
+            Console.WriteLine("7. See my informations");
+            Console.WriteLine("8. Log Out");
             Console.Write("Enter your choice: ");
         }
     }

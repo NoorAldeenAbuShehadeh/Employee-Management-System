@@ -95,7 +95,7 @@ namespace Employee_Management_System.DAL
                     Role = user.Role,
                     Password = user.Password
                 };
-                _logger.LogError($"Get data for user");
+                _logger.LogInformation($"Get data for user");
                 return userDTO;
             }
             catch (Exception ex)
@@ -161,7 +161,7 @@ namespace Employee_Management_System.DAL
                     else
                     {
                         Console.WriteLine("wrong password.");
-                        _logger.LogInformation($"User with email {email} try to logg in but enter wrong password.");
+                        _logger.LogError($"User with email {email} try to logg in but enter wrong password.");
                         return null;
                     }
                 }
@@ -190,7 +190,6 @@ namespace Employee_Management_System.DAL
                     user.Password = userDTO.Password;
                     user.Name = userDTO.Name;
                     user.Role = userDTO.Role;
-                    _context.SaveChanges();
                     _logger.LogInformation($"User with email {userDTO.Email} updated.");
                     return true;
                 }
