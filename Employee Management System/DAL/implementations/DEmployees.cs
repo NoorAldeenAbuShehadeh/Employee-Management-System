@@ -1,6 +1,7 @@
 ﻿using Employee_Management_System.Model;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Employee_Management_System.DAL
 {
@@ -183,6 +184,30 @@ namespace Employee_Management_System.DAL
             {
                 Console.WriteLine($"Error while retrive all employees have min salary = {minSalary}: {ex.Message}");
                 _logger.LogError($"Error while retrive all employees have min salary = {minSalary}: {ex.Message}");
+                return null;
+            }
+        }
+        public List<EmployeeDTO>? SerchEmployeesbyCityName(string cityName)
+        {
+            try
+            {
+                var employeeDTOs = _context.Employees
+                    .Where(emp => emp.Address.ToLower().Contains(cityName.Trim().ToLower()))
+                    .Select(emp => new EmployeeDTO
+                    {
+                        UserEmail = emp.UserEmail,
+                        Address = emp.Address,
+                        DepartmentName = emp.DepartmentName,
+                        PhoneNumber = emp.PhoneNumber,
+                    }).ToList();
+
+                _logger.LogInformation("retrived all employees lives in specific city");
+                return employeeDTOs;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrive employees lives in specific city: {ex.Message}");
+                _logger.LogError($"Error while retrive employees lives in specific city: {ex.Message}");
                 return null;
             }
         }

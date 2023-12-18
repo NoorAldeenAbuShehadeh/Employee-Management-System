@@ -54,15 +54,15 @@ namespace Employee_Management_System.Services
         {
             try
             {
-                Console.Write("Enter attendance status enter 0 if Present, 1 if Absent, 2 if Vacation, 3 if Remote): ");
+                Console.Write("Enter attendance status enter 0 if Present, 1 if Absent, 2 if Vacation, 3 if Remote: ");
                 AttendanceStatus status = Enum.Parse<AttendanceStatus>(Console.ReadLine());
                 DateTime? checkIn = null;
                 DateTime? checkOut = null;
-                if(status == AttendanceStatus.Remote || status == AttendanceStatus.Present)
+                Console.Write("Enter check in date and time (yyyy-MM-dd HH:mm:ss): ");
+                checkIn = DateTime.ParseExact(Console.ReadLine(), "yyyy-MM-dd HH:mm:ss", null, System.Globalization.DateTimeStyles.None);
+                if (status == AttendanceStatus.Remote || status == AttendanceStatus.Present)
                 { 
-                    Console.Write("Enter start date and time (yyyy-MM-dd HH:mm:ss): ");
-                    checkIn = DateTime.ParseExact(Console.ReadLine(), "yyyy-MM-dd HH:mm:ss", null, System.Globalization.DateTimeStyles.None);
-                    Console.Write("Enter end date and time (yyyy-MM-dd HH:mm:ss): ");
+                    Console.Write("Enter check out date and time (yyyy-MM-dd HH:mm:ss): ");
                     checkOut = DateTime.ParseExact(Console.ReadLine(), "yyyy-MM-dd HH:mm:ss", null, System.Globalization.DateTimeStyles.None);
                 }
                 AttendanceDTO attendance = new AttendanceDTO
@@ -89,7 +89,7 @@ namespace Employee_Management_System.Services
                 {
                     Console.WriteLine("1. Change password");
                     Console.WriteLine("2. Change address");
-                    Console.WriteLine("1. Change phone number");
+                    Console.WriteLine("3. Change phone number");
                     Console.Write("Enter your choice: ");
                     int choice = int.Parse(Console.ReadLine());
                     switch (choice)

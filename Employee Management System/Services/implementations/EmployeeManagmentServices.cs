@@ -146,7 +146,13 @@ namespace Employee_Management_System.Services
                         case 13:
                             _adminServices.FilterEmployeesBySalary();
                             break;
-                        case 20:
+                        case 14:
+                            _adminServices.DepartmentStatistics();
+                            break;
+                        case 15:
+                            _adminServices.SerchForEmployeesByCity();
+                            break;
+                        case 16:
                             logOut = true;
                             break;
                         default:
@@ -178,7 +184,9 @@ namespace Employee_Management_System.Services
             Console.WriteLine("11. Attendance report");
             Console.WriteLine("12. Get all leaves");
             Console.WriteLine("13. Get employees have salary >= 1000");
-            Console.WriteLine("20. Log out");
+            Console.WriteLine("14. Get department statistics");
+            Console.WriteLine("15. Serch for employees by city");
+            Console.WriteLine("16. Log out");
             Console.Write("Enter your choice: ");
         }
         private void ManagerFunctionalities(UserDTO user)

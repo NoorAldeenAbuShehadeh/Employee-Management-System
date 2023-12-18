@@ -15,5 +15,7 @@
         public void GetAttendances();
         public void GetLeaves();
         public void FilterEmployeesBySalary();
+        public void DepartmentStatistics();
+        public void SerchForEmployeesByCity();
     }
 }

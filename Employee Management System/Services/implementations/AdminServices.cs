@@ -287,7 +287,7 @@ namespace Employee_Management_System.Services
                 else
                 {
                     Console.WriteLine($"No salary information for employee {email}");
-                    _logger.LogInformation($"No salary information for employee {email}");
+                    _logger.LogError($"No salary information for employee {email}");
                 }
             }
             catch (Exception ex)
@@ -362,12 +362,44 @@ namespace Employee_Management_System.Services
                 {
                     Console.WriteLine($"email: {e.UserEmail}, Department: {e.DepartmentName}");
                 });
+                _logger.LogInformation($"Get employees that have salary > 1000");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while get employees that have salary > 1000: {ex.Message}");
+                _logger.LogError($"Error while get employees that have salary > 1000: {ex.Message}");
+            }
+        }
+        public void DepartmentStatistics()
+        {
+            try
+            {
+                _dDepartments.DepartmentsStatistics()?.ForEach(d =>
+                {
+                    Console.WriteLine($"Department name: {d.Key}, Number of employees: {d.Value}");
+                });
                 _logger.LogInformation($"Get data for all employees");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while get departments: {ex.Message}");
                 _logger.LogError($"Error while get departments: {ex.Message}");
+            }
+        }
+        public void SerchForEmployeesByCity()
+        {
+            try
+            {
+                Console.Clear();
+                Console.Write("Enter city name: ");
+                string city = Console.ReadLine();
+                _dEmployees.SerchEmployeesbyCityName(city)?.ForEach(e => 
+                Console.WriteLine($"Employee email: {e.UserEmail}, Department name: {e.DepartmentName}, Address: {e.Address}, Phone number: {e.PhoneNumber}"));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while update department: {ex.Message}");
+                _logger.LogError($"Error while update department: {ex.Message}");
             }
         }
     }

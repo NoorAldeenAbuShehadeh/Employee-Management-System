@@ -117,6 +117,27 @@ namespace Employee_Management_System.DAL
                 return false;
             }
         }
+        public List<KeyValuePair<string, int>>? DepartmentsStatistics()
+        {
+            try
+            {
+                var departmentsInfo = (from emp in _context.Employees
+                                       join department in _context.Departments
+                                       on emp.DepartmentName equals department.Name
+                                       group emp by department.Name into DG
+                                       select new KeyValuePair<string, int>
+                                       (DG.Key,DG.Count())
+                                       ).ToList();
+                _logger.LogInformation("retrived all departments");
+                return departmentsInfo;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while retrive all departments: {ex.Message}");
+                _logger.LogError($"Error while retrive all departments: {ex.Message}");
+                return null;
+            }
+        }
         private void ValidateDepartment(DepartmentDTO departmentDTO)
         {
             var validationContext = new ValidationContext(departmentDTO, serviceProvider: null, items: null);

@@ -14,7 +14,6 @@ namespace Employee_Management_System.DAL
             _context = context;
             _logger = logger;
         }
-
         public bool AddSalary(SalaryDTO salaryDTO)
         {
             try
@@ -93,7 +92,7 @@ namespace Employee_Management_System.DAL
         {
             try
             {
-                Salary? salary = _context.Salaries.FirstOrDefault(s => s.EmployeeEmail == employeeEmail);
+                Salary? salary = _context.Salaries.FirstOrDefault(s => s.EmployeeEmail == employeeEmail.Trim());
                 if (salary == null)
                 {
                     Console.WriteLine($"salary with employee email {employeeEmail} not found.");
